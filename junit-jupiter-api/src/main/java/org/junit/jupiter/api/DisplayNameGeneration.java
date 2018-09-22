@@ -11,6 +11,7 @@
 package org.junit.jupiter.api;
 
 import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+import static org.junit.jupiter.api.DisplayNameGenerator.parameterTypesAsString;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,14 +22,14 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 import org.apiguardian.api.API;
-import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.commons.util.Preconditions;
 
 /**
- * {@code @DisplayNameGeneration} is used to declare...
+ * {@code @DisplayNameGeneration} is used to declare a custom display name
+ * generator for the annotated test class.
  *
- * <p>Display names are typically used for test reporting in IDEs and build
- * tools and may contain spaces, special characters, and even emoji.
+ * <p>Users may select either a pre-defined {@link Style} or supply a
+ * custom {@link DisplayNameGenerator} implementation.
  *
  * @since 5.4
  * @see DisplayName
@@ -42,27 +43,32 @@ import org.junit.platform.commons.util.Preconditions;
 public @interface DisplayNameGeneration {
 
 	/**
+	 * Custom display name generator.
+	 *
 	 * @return custom display name generator implementation or {@link DisplayNameGenerator}
-	 *         to use the {@code Style} provided by the {@link #value()} property
+	 *         to use the {@link Style} provided by the {@link #value()} property
 	 */
 	Class<? extends DisplayNameGenerator> generator() default DisplayNameGenerator.class;
 
 	/**
-	 * @return the style to use, can be overridden by a custom display name generator implementation
+	 * The pre-defined style to use.
+	 *
+	 * @return the style to use, can be overridden by a custom display
+	 * name {@link #generator()} implementation
 	 */
 	Style value() default Style.DEFAULT;
 
 	/**
-	 * TODO Javadoc
+	 * Pre-defined {@link DisplayNameGenerator} implementations.
 	 */
 	enum Style implements DisplayNameGenerator {
 		/**
 		 * Default display name generator.
+		 *
+		 * <p>The implementation matches the published behaviour when Jupiter 5.0.0
+		 * was released.
 		 */
 		DEFAULT {
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForClass(Class<?> testClass) {
 				Preconditions.notNull(testClass, "Test class must not be null");
@@ -71,18 +77,12 @@ public @interface DisplayNameGeneration {
 				return name.substring(lastDot + 1);
 			}
 
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForNestedClass(Class<?> nestedClass) {
 				Preconditions.notNull(nestedClass, "Nested test class must not be null");
 				return nestedClass.getSimpleName();
 			}
 
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForMethod(Class<?> testClass, Method testMethod) {
 				Preconditions.notNull(testClass, "Test class must not be null");
@@ -92,46 +92,33 @@ public @interface DisplayNameGeneration {
 		},
 
 		/**
-		 * TODO Javadoc
+		 * Replace all underscore characters with spaces.
+		 *
+		 * <p>The {@code UNDERSCORE} style replaces all underscore characters ({@code '_'})
+		 * found in class and method names with a space character: {@code ' '}.
 		 */
 		UNDERSCORE {
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForClass(Class<?> testClass) {
-				return replaceUnderscore(DEFAULT.generateDisplayNameForClass(testClass));
+				return replaceUnderscores(DEFAULT.generateDisplayNameForClass(testClass));
 			}
 
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForNestedClass(Class<?> nestedClass) {
-				return replaceUnderscore(DEFAULT.generateDisplayNameForNestedClass(nestedClass));
+				return replaceUnderscores(DEFAULT.generateDisplayNameForNestedClass(nestedClass));
 			}
 
-			/**
-			 * TODO Javadoc
-			 */
 			@Override
 			public String generateDisplayNameForMethod(Class<?> testClass, Method testMethod) {
 				Preconditions.notNull(testClass, "Test class must not be null");
 				Preconditions.notNull(testMethod, "Test method must not be null");
-				return replaceUnderscore(testMethod.getName()) + parameterTypesAsString(testMethod);
+				// don't replace underscores in parameter type names
+				return replaceUnderscores(testMethod.getName()) + parameterTypesAsString(testMethod);
 			}
 
-			private String replaceUnderscore(String name) {
+			private String replaceUnderscores(String name) {
 				return name.replace('_', ' ');
 			}
-		};
-
-		/**
-		 * @return a string representation of all parameter types of the
-		 *         passed method or {@code "()"} if the method has no parameters
-		 */
-		private static String parameterTypesAsString(Method testMethod) {
-			return '(' + ClassUtils.nullSafeToString(Class::getSimpleName, testMethod.getParameterTypes()) + ')';
 		}
 
 	}

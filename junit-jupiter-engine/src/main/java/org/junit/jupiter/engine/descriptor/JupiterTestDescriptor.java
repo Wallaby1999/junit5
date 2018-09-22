@@ -145,7 +145,7 @@ public abstract class JupiterTestDescriptor extends AbstractTestDescriptor
 				return displayName;
 			}
 		}
-		// else
+		// else let a 'DisplayNameGenerator' generator generate a display name
 		return displayNameSupplier.get();
 	}
 

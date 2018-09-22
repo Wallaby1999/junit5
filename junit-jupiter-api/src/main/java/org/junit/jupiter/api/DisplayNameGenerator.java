@@ -15,6 +15,7 @@ import static org.apiguardian.api.API.Status.EXPERIMENTAL;
 import java.lang.reflect.Method;
 
 import org.apiguardian.api.API;
+import org.junit.platform.commons.util.ClassUtils;
 
 /**
  * {@code DisplayNameGenerator} defines the SPI for generating display
@@ -29,22 +30,16 @@ public interface DisplayNameGenerator {
 
 	/**
 	 * Generate a display name for the given top-level or {@code static} nested test class.
-	 *
-	 * TODO Javadoc
 	 */
 	String generateDisplayNameForClass(Class<?> testClass);
 
 	/**
 	 * Generate a display name for the given {@link Nested} inner test class.
-	 *
-	 * TODO Javadoc
 	 */
 	String generateDisplayNameForNestedClass(Class<?> nestedClass);
 
 	/**
 	 * Generate a display name for the given method.
-	 *
-	 * TODO Javadoc
 	 *
 	 * @implNote The class instance passed as {@code testClass} may differ from
 	 * the returned class by {@code testMethod.getDeclaringClass()}: e.g., when
@@ -54,4 +49,16 @@ public interface DisplayNameGenerator {
 	 * @param testMethod method to generate a display name for
 	 */
 	String generateDisplayNameForMethod(Class<?> testClass, Method testMethod);
+
+	/**
+	 * Compile a string representation from all simple parameter type names.
+	 *
+	 * @param method the method providing parameter types for the result
+	 * @return a string representation of all parameter types of the
+	 *         supplied method or {@code "()"} if the method has no parameters
+	 */
+	static String parameterTypesAsString(Method method) {
+		return '(' + ClassUtils.nullSafeToString(Class::getSimpleName, method.getParameterTypes()) + ')';
+	}
+
 }
