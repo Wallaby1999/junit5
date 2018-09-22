@@ -28,17 +28,16 @@ import org.apiguardian.api.API;
 public interface DisplayNameGenerator {
 
 	/**
-	 * Generate a display name for the given top-level test class.
+	 * Generate a display name for the given top-level or {@code static} nested test class.
 	 *
 	 * TODO Javadoc
 	 */
 	String generateDisplayNameForClass(Class<?> testClass);
 
 	/**
-	 * Generate a display name for the given nested test class.
+	 * Generate a display name for the given {@link Nested} inner test class.
 	 *
 	 * TODO Javadoc
-	 * TODO Find better name, split into two different methods?
 	 */
 	String generateDisplayNameForNestedClass(Class<?> nestedClass);
 
@@ -51,7 +50,7 @@ public interface DisplayNameGenerator {
 	 * the returned class by {@code testMethod.getDeclaringClass()}: e.g., when
 	 * a test method is inherited from a super class.
 	 *
-	 * @param testClass current test class this method "belongs" to
+	 * @param testClass the class the test method is invoked on
 	 * @param testMethod method to generate a display name for
 	 */
 	String generateDisplayNameForMethod(Class<?> testClass, Method testMethod);

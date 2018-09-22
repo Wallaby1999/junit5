@@ -97,29 +97,36 @@ public abstract class JupiterTestDescriptor extends AbstractTestDescriptor
 		// @formatter:on
 	}
 
-	protected static DisplayNameGenerator getDisplayNameGenerator(Class<?> testClass) {
+	static DisplayNameGenerator getDisplayNameGenerator(Class<?> testClass) {
 		Preconditions.notNull(testClass, "Test class must not be null");
-		// first locate direct or meta-direct present annotations
-		DisplayNameGeneration generation = findAnnotation(testClass, DisplayNameGeneration.class).orElse(null);
-		// next, crawl enclosing classes
+		DisplayNameGeneration generation = getDisplayNameGenerationOrNull(testClass);
+		// trivial case: no user-defined generation annotation present, return default style
 		if (generation == null) {
-			Class<?> current = testClass.getEnclosingClass();
-			while (current != null) {
-				DisplayNameGeneration enclosedGeneration = current.getAnnotation(DisplayNameGeneration.class);
-				if (enclosedGeneration != null) {
-					generation = enclosedGeneration;
-					break;
-				}
-				current = current.getEnclosingClass();
-			}
+			return DisplayNameGeneration.Style.DEFAULT;
 		}
-		if (generation != null) {
-			if (generation.generator() != DisplayNameGenerator.class) {
-				return ReflectionUtils.newInstance(generation.generator());
-			}
+		// no user-defined generator supplied case: return selected style
+		if (generation.generator() == DisplayNameGenerator.class) {
 			return generation.value();
 		}
-		return DisplayNameGeneration.Style.DEFAULT;
+		// else: create an instance of the supplied generator implementation class and return it
+		return ReflectionUtils.newInstance(generation.generator());
+	}
+
+	/**
+	 * Find the first {@code DisplayNameGeneration} annotation that is either
+	 * <em>directly present</em>, <em>meta-present</em>, <em>indirectly present</em>
+	 * on the supplied {@code testClass} or on an enclosing class.
+	 */
+	private static DisplayNameGeneration getDisplayNameGenerationOrNull(Class<?> testClass) {
+		Class<?> candidate = testClass;
+		do {
+			Optional<DisplayNameGeneration> generation = findAnnotation(candidate, DisplayNameGeneration.class);
+			if (generation.isPresent()) {
+				return generation.get();
+			}
+			candidate = candidate.getEnclosingClass();
+		} while (candidate != null);
+		return null;
 	}
 
 	protected static String determineDisplayName(AnnotatedElement element, Supplier<String> displayNameSupplier) {

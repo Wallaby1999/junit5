@@ -20,8 +20,8 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.EmptyStackException;
+import java.util.List;
 import java.util.Stack;
 
 import org.junit.jupiter.engine.AbstractJupiterTestEngineTests;
@@ -36,47 +36,50 @@ class DisplayNameGenerationTests extends AbstractJupiterTestEngineTests {
 
 	@Test
 	void defaultStyle() {
-		check(DefaultStyleTestCase.class, //
+		check(DefaultStyleTestCase.class, List.of( //
 			"CONTAINER: DisplayNameGenerationTests$DefaultStyleTestCase", //
 			"TEST: @DisplayName prevails", //
 			"TEST: test()", //
 			"TEST: test(TestInfo)", //
 			"TEST: testUsingCamelCaseStyle()", //
 			"TEST: testUsingCamelCase_and_also_UnderScores()", //
+			"TEST: testUsingCamelCase_and_also_UnderScores_keepingParameterTypeNamesIntact(TestInfo)", //
 			"TEST: test_with_underscores()" //
-		);
+		));
 	}
 
 	@Test
 	void underscoreStyle() {
-		var expectedDisplayNames = new String[] { //
-				"CONTAINER: DisplayNameGenerationTests\\$UnderscoreStyle.*", //
-				"TEST: @DisplayName prevails", //
-				"TEST: test with underscores()", //
-				"TEST: test()", //
-				"TEST: test(TestInfo)", //
-				"TEST: testUsingCamelCase and also UnderScores()", //
-				"TEST: testUsingCamelCaseStyle()" };
+		var expectedDisplayNames = List.of( //
+			"CONTAINER: DisplayNameGenerationTests\\$UnderscoreStyle.*", //
+			"TEST: @DisplayName prevails", //
+			"TEST: test with underscores()", //
+			"TEST: test()", //
+			"TEST: test(TestInfo)", //
+			"TEST: testUsingCamelCase and also UnderScores keepingParameterTypeNamesIntact(TestInfo)", //
+			"TEST: testUsingCamelCase and also UnderScores()", //
+			"TEST: testUsingCamelCaseStyle()");
 		check(UnderscoreStyleTestCase.class, expectedDisplayNames);
 		check(UnderscoreStyleInheritedFromSuperClassTestCase.class, expectedDisplayNames);
 	}
 
 	@Test
 	void noNameStyle() {
-		check(NoNameStyleTestCase.class, //
+		check(NoNameStyleTestCase.class, List.of( //
 			"CONTAINER: nn", //
 			"TEST: @DisplayName prevails", //
 			"TEST: nn", //
 			"TEST: nn", //
 			"TEST: nn", //
 			"TEST: nn", //
+			"TEST: nn", //
 			"TEST: nn" //
-		);
+		));
 	}
 
 	@Test
 	void checkDisplayNameGeneratedForTestingAStackDemo() {
-		check(StackTestCase.class, //
+		check(StackTestCase.class, List.of( //
 			"CONTAINER: A new stack", //
 			"CONTAINER: A stack", //
 			"CONTAINER: After pushing an element to an empty stack", //
@@ -87,14 +90,14 @@ class DisplayNameGenerationTests extends AbstractJupiterTestEngineTests {
 			"TEST: the stack is no longer empty()", //
 			"TEST: throws an EmptyStackException when peeked()", //
 			"TEST: throws an EmptyStackException when popped()" //
-		);
+		));
 	}
 
-	private void check(Class<?> testClass, String... expectedDisplayNames) {
+	private void check(Class<?> testClass, List<String> expectedDisplayNames) {
 		var request = request().selectors(selectClass(testClass)).build();
 		var descriptors = discoverTests(request).getDescendants();
 		var sortedNames = descriptors.stream().map(this::describe).sorted().collect(toList());
-		assertLinesMatch(Arrays.asList(expectedDisplayNames), sortedNames);
+		assertLinesMatch(expectedDisplayNames, sortedNames);
 	}
 
 	private String describe(TestDescriptor descriptor) {
@@ -138,6 +141,11 @@ class DisplayNameGenerationTests extends AbstractJupiterTestEngineTests {
 
 		@Test
 		void testUsingCamelCase_and_also_UnderScores() {
+		}
+
+		@Test
+		void testUsingCamelCase_and_also_UnderScores_keepingParameterTypeNamesIntact(TestInfo testInfo) {
+			testInfo.getDisplayName();
 		}
 
 		@Test
