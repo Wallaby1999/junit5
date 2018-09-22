@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGeneration.Style;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,11 +21,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 // tag::user_guide[]
-@DisplayNameGeneration(Style.DEFAULT)
 class DisplayNameGeneratorDemo {
 
 	@Nested
-	@DisplayNameGeneration(Style.UNDERSCORE)
+	@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 	class A_year_is_not_supported {
 
 		@Test
@@ -42,7 +40,7 @@ class DisplayNameGeneratorDemo {
 	}
 
 	@Nested
-	@DisplayNameGeneration(generator = IndicativeSentences.class)
+	@DisplayNameGeneration(IndicativeSentences.class)
 	class A_year_is_a_leap_year {
 
 		@Test
@@ -56,16 +54,16 @@ class DisplayNameGeneratorDemo {
 
 	}
 
-	static class IndicativeSentences implements DisplayNameGenerator {
+	static class IndicativeSentences extends DisplayNameGenerator.ReplaceUnderscores {
 
 		@Override
 		public String generateDisplayNameForClass(Class<?> testClass) {
-			return Style.UNDERSCORE.generateDisplayNameForClass(testClass);
+			return super.generateDisplayNameForClass(testClass);
 		}
 
 		@Override
 		public String generateDisplayNameForNestedClass(Class<?> nestedClass) {
-			return Style.UNDERSCORE.generateDisplayNameForNestedClass(nestedClass) + "...";
+			return super.generateDisplayNameForNestedClass(nestedClass) + "...";
 		}
 
 		@Override
