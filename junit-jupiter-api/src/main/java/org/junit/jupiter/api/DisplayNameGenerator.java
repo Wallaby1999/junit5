@@ -22,6 +22,8 @@ import org.junit.platform.commons.util.Preconditions;
  * {@code DisplayNameGenerator} defines the SPI for generating display
  * names programmatically.
  *
+ * <p>An implementation must provide an accessible no-arg constructor.
+ *
  * @since 5.4
  * @see DisplayName
  * @see DisplayNameGeneration
@@ -59,16 +61,17 @@ public interface DisplayNameGenerator {
 	 *         supplied method or {@code "()"} if the method has no parameters
 	 */
 	static String parameterTypesAsString(Method method) {
+		Preconditions.notNull(method, "Method must not be null");
 		return '(' + ClassUtils.nullSafeToString(Class::getSimpleName, method.getParameterTypes()) + ')';
 	}
 
 	/**
-	 * Default display name generator.
+	 * Standard display name generator.
 	 *
 	 * <p>The implementation matches the published behaviour when Jupiter 5.0.0
 	 * was released.
 	 */
-	class DefaultGenerator implements DisplayNameGenerator {
+	class StandardGenerator implements DisplayNameGenerator {
 		@Override
 		public String generateDisplayNameForClass(Class<?> testClass) {
 			Preconditions.notNull(testClass, "Test class must not be null");
@@ -97,7 +100,7 @@ public interface DisplayNameGenerator {
 	 * <p>The {@code ReplaceUnderscores} generator replaces all underscore characters
 	 * ({@code '_'}) found in class and method names with space characters: {@code ' '}.
 	 */
-	class ReplaceUnderscores extends DefaultGenerator {
+	class ReplaceUnderscores extends StandardGenerator {
 
 		@Override
 		public String generateDisplayNameForClass(Class<?> testClass) {
