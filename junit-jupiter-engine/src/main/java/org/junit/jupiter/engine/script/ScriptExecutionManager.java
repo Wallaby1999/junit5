@@ -80,6 +80,9 @@ public class ScriptExecutionManager {
 		if (scriptEngine == null) {
 			scriptEngine = scriptEngineManager.getEngineByMimeType(engine);
 		}
+		if (scriptEngine == null && engine.equals("java")) {
+			scriptEngine = new JavaScriptEngine();
+		}
 		Preconditions.notNull(scriptEngine, () -> "Script engine not found: " + engine);
 
 		Bindings bindings = scriptEngine.getBindings(ScriptContext.GLOBAL_SCOPE);
